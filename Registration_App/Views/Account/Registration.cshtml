@@ -1,22 +1,20 @@
 ﻿@model Registration_App.Models.RegistrationViewModel
-
-
 @{
     ViewData["Title"] = "Registration";
     string[] GenderOptions = { "Male", "Female", "Other" };
-    string[] SkillOptions = { "C#", "Java", "Python", "C++" };
+    string[] SkillOptions = { "C#", "Java", "Python", "JavaScript", "HTML/CSS" };
     string[] RoleOptions = { "User", "Admin", "Moderator" };
 }
-
 <h1>Registration</h1>
-
-<h4>RegistrationViewModel</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Registration">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
+            @if (ViewBag.Message != null)
+            {
+                <div class="form-group" style="color:green;"> @ViewBag.Message</div>
+            }
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label"></label>
                 <input asp-for="FirstName" class="form-control" />
@@ -29,7 +27,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
+                <input asp-for="Email" id="email" name="email" class="form-control" />
                 <span asp-validation-for="Email" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -39,12 +37,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="Password" class="control-label"></label>
-                <input asp-for="Password" class="form-control" />
+                <input asp-for="Password" class="form-control" id="password" type="password" />
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="ConfirmPassword" class="control-label"></label>
-                <input asp-for="ConfirmPassword" class="form-control" />
+                <input asp-for="ConfirmPassword" class="form-control" type="password" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -55,17 +53,16 @@
             <div class="form-group">
                 <label asp-for="Gender" class="control-label"></label>
                 <div>
-                    @foreach (var gender in GenderOptions)
+                    @for (int i = 0; i < GenderOptions.Length; i++)
                     {
                         <div class="form-check">
-                            <input asp-for="Gender" class="form-check-input" type="radio" value="@gender" />
-                            <label class="form-check-label">@gender</label>
+                            <input type="radio" name="Gender" value="@GenderOptions[i]" class="form-check-input" />
+                            <label class="form-check-label">@GenderOptions[i]</label>
                         </div>
                     }
                 </div>
                 <span asp-validation-for="Gender" class="text-danger"></span>
             </div>
-
             <div class="form-group">
                 <label asp-for="Skills" class="control-label"></label>
                 <div>
@@ -79,17 +76,13 @@
                 </div>
                 <span asp-validation-for="Skills" class="text-danger"></span>
             </div>
-
-
-
-
             <div class="form-group">
                 <label asp-for="Role" class="control-label"></label>
                 <div>
-                    @for (int i = 0;i< RoleOptions.Length;i++)
+                    @for (int i = 0; i < RoleOptions.Length; i++)
                     {
                         <div class="form-check">
-                            <input asp-for="Role" class="form-check-input" type="radio" value="@RoleOptions[i]" />
+                            <input type="radio" name="Role" value="@RoleOptions[i]" class="form-check-input" />
                             <label class="form-check-label">@RoleOptions[i]</label>
                         </div>
                     }
@@ -97,22 +90,145 @@
                 <span asp-validation-for="Role" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Register" class="btn btn-primary" />
             </div>
         </form>
     </div>
 </div>
-
 <div>
-    <a asp-action="Index">Back to List</a>
+    Already Have an Account <a asp-action="Login">Go to Login</a>
 </div>
-
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-<script src="jquery-3.7.1.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.21.0/jquery.validate.min.js"></script>
+@* <script>
+     $(document).ready(function () {
+         $('form').validate({
+             rules: {
+                 Password:{
+                     required:true,
+                 },
+                 ConfirmPassword:{
+                     required:true,
+                     equalTo:'#password'
+                 }
+             },
+             messages: {
+                 Password: {
+                     required:"please enter the password"
+                 },
+                ConfirmPassword:{
+                    equalTo:"Please check password and confirm password should match",
+                    required:"Please Reenter the password",
+                }
+             }
+         });
+         $("#btn1").on('click', function () {
+             console.log($('form').valid());
+         });
+     });
+ </script> *@
 <script>
-
+    $(document).ready(function () {
+        $.validator.addMethod("EmailDomain", function (value, element, args) {
+            return (value.indexOf("gmail.com") != -1);
+        }, 'Email are only from gmail.com');
+        $('form').validate({
+            rules: {
+                FirstName: {
+                    required: true,
+                    minLength: 5,
+                    maxLength: 20,
+                },
+                LastName: {
+                    required: true,
+                },
+                UserName: {
+                    required: true,
+                },
+                DateOfBirth: {
+                    required: true,
+                },
+                Gender: {
+                    required: true
+                },
+                Role: {
+                    required: true
+                },
+                Password: {
+                    required: true,
+                },
+                ConfirmPassword: {
+                    required: true,
+                    equalTo: '#password'
+                },
+                email: {
+                    required: true,
+                    EmailDomain: true,
+                },
+            },
+            messages: {
+                Password: {
+                    required: "please enter the password"
+                },
+                ConfirmPassword: {
+                    equalTo: "Please check password and confirm password should match",
+                    required: "Please Reenter the password",
+                },
+                UserName: {
+                    required: "Please enter the User Name",
+                },
+                FirstName: {
+                    required: "Please enter the first Name",
+                    minLength: "The Minimum Length is 5",
+                    maxLength: "The Maximum Length is 20",
+                },
+                LastName: {
+                    required: "Please enter the last Name",
+                },
+                DateOfBirth: {
+                    required: "Please Enter the Date Of Birth",
+                },
+                Gender: {
+                    required: "Please Enter Your Gender",
+                },
+                Role: {
+                    required: "Please enter your Role",
+                }
+            }
+        });
+        $("#btn1").on('click', function () {
+            console.log($('form').valid());
+        });
+    });
 </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
