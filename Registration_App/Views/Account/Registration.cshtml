@@ -132,83 +132,92 @@
          });
      });
  </script> *@
-<script>
+ <script>
     $(document).ready(function () {
-        $.validator.addMethod("EmailDomain", function (value, element, args) {
-            return (value.indexOf("gmail.com") != -1);
-        }, 'Email are only from gmail.com');
-        $('form').validate({
-            rules: {
-                FirstName: {
-                    required: true,
-                    minLength: 5,
-                    maxLength: 20,
-                },
-                LastName: {
-                    required: true,
-                },
-                UserName: {
-                    required: true,
-                },
-                DateOfBirth: {
-                    required: true,
-                },
-                Gender: {
-                    required: true
-                },
-                Role: {
-                    required: true
-                },
-                Password: {
-                    required: true,
-                },
-                ConfirmPassword: {
-                    required: true,
-                    equalTo: '#password'
-                },
-                email: {
-                    required: true,
-                    EmailDomain: true,
-                },
-            },
-            messages: {
-                Password: {
-                    required: "please enter the password"
-                },
-                ConfirmPassword: {
-                    equalTo: "Please check password and confirm password should match",
-                    required: "Please Reenter the password",
-                },
-                UserName: {
-                    required: "Please enter the User Name",
-                },
-                FirstName: {
-                    required: "Please enter the first Name",
-                    minLength: "The Minimum Length is 5",
-                    maxLength: "The Maximum Length is 20",
-                },
-                LastName: {
-                    required: "Please enter the last Name",
-                },
-                DateOfBirth: {
-                    required: "Please Enter the Date Of Birth",
-                },
-                Gender: {
-                    required: "Please Enter Your Gender",
-                },
-                Role: {
-                    required: "Please enter your Role",
-                }
-            }
-        });
-        $("#btn1").on('click', function () {
-            console.log($('form').valid());
-        });
-    });
-</script>
+         $.validator.addMethod("EmailDomain", function (value, element, args) {
+             var regex = /^([a-zA-Z0-9_.+-])+\@@(([a - zA - Z0 - 9 -]) +\.)+([a-zA-Z0-9]{2,4})+$/;
+             return regex.test(value);
+         }, 'Write the right email')
+
+         $.validator.addMethod("passwordStrength", function(value, element, args) {
+        // Regular expression to check for at least one digit, one special character, one lowercase letter, one uppercase letter, and a minimum length of 8 characters
+        var re = /^(?=.*\d)(?=.*[!@@#$%^&*])(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+        return re.test(value);
+    }, "Please write a stronger password");
 
 
 
+     $('form').validate({
+         rules: {
+             FirstName: {
+                 required:true,
+                 minlength:5,
+                 maxlength:20,
+             },
+             LastName: {
+                 required:true,
+             },
+             UserName: {
+                 required:true,
+             },
+             DateOfBirth: {
+                 required:true,
+             },
+             Gender:{
+                 required:true
+             },
+             Role:{
+                 required:true
+             },
+             Password: {
+                 required: true,
+                 passwordStrength:true
+             },
+             ConfirmPassword: {
+                 required: true,
+                 equalTo: '#password'
+             },
+             email:{
+                 required:true,
+                 EmailDomain:true,
+             },
+         },
+         messages: {
+             Password: {
+                 required: "please enter the password",
+             },
+             ConfirmPassword: {
+                 equalTo: "Please check password and confirm password should match",
+                 required: "Please Reenter the password",
+             },
+             UserName: {
+                 required:"Please enter the User Name",
+             },
+             FirstName: {
+                 required:"Please enter the first Name",
+                 minlength: "The Minimum Length is 5",
+                 maxlength: "The Maximum Length is 20",
+             },
+             LastName:{
+                 required:"Please enter the last Name",
+             },
+             DateOfBirth: {
+                 required:"Please Enter the Date Of Birth",
+             },
+             Gender: {
+                 required:"Please Enter Your Gender",
+             },
+             Role: {
+                 required:"Please enter your Role",
+             }
+         }
+     });
+     $("#btn1").on('click', function () {
+         console.log($('form').valid());
+     });
+ });
+
+ </script>
 
 
 
