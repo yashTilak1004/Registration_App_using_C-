@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Registration_App.Models;
 
 namespace Registration_App.Entities
 {
@@ -8,12 +9,13 @@ namespace Registration_App.Entities
         {
 
         }
-        public DbSet<UserAccount> UserAccounts { get; set; }
+        public DbSet<UA> Full_table  { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
         }
+        public DbSet<Registration_App.Models.RegistrationViewModel> RegistrationViewModel { get; set; } = default!;
     }
 }
 //Data Source=DESKTOP-NAHT0BE\SQLEXPRESS;User ID=appuser;Password=Code@123;Connect Timeout=30;Encrypt=True;Trust Server Certificate=True;Application Intent=ReadWrite;Multi Subnet Failover=False

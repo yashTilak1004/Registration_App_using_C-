@@ -21,26 +21,32 @@ namespace Registration_App.Controllers
 
         public IActionResult Index()
         {
-            return View(_context.UserAccounts.ToList());
+            return View(_context.Full_table.ToList());
         }
+
+        [HttpGet]
         public IActionResult Registration()
         {
             return View();
         }
+
+        [HttpPost]
         public IActionResult Registration(RegistrationViewModel model)
         {
             if (ModelState.IsValid)
             {
-                UserAccount account = new UserAccount();
-                account.Email = model.Email;
-                account.FirstName = model.FirstName;
-                account.LastName = model.LastName;
-                account.Password = model.Password;
-                account.UserName = model.UserName;
+                UA account = new UA
+                {
+                    Email = model.Email,
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    Password = model.Password,
+                    UserName = model.UserName
+                };
 
                 try
                 {
-                    _context.UserAccounts.Add(account);
+                    _context.Full_table.Add(account);
                     _context.SaveChanges();
 
                     ModelState.Clear();
@@ -65,20 +71,21 @@ namespace Registration_App.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = _context.UserAccounts.Where(x => (x.UserName == model.UserNameOrEmail || x.Email == model.UserNameOrEmail) && x.Password == model.Password).FirstOrDefault();
-                if(user != null)
+                var user = _context.Full_table.Where(x => (x.UserName == model.UserNameOrEmail || x.Email == model.UserNameOrEmail) && x.Password == model.Password).FirstOrDefault();
+                if (user != null)
                 {
                     var claims = new List<Claim>
                     {
                         new Claim(ClaimTypes.Name,user.Email),
                         new Claim("Name",user.FirstName),
+                        new Claim("Email",user.Email),
                         new Claim(ClaimTypes.Role,"User")
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme,new ClaimsPrincipal(claimsIdentity));
+                    HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-                    return RedirectToAction("Secure Page");
+                    return RedirectToAction("SecurePage");
                 }
                 else
                 {
@@ -100,16 +107,16 @@ namespace Registration_App.Controllers
             ViewBag.Name = HttpContext.User.Identity.Name;
             return View();
         }
-
     }
-    
 }
 */
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Identity; // Add this using directive
 using Registration_App.Entities;
 using Registration_App.Models;
 using System.Security.Claims;
@@ -119,15 +126,17 @@ namespace Registration_App.Controllers
     public class AccountController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly PasswordHasher<UA> _passwordHasher;
 
         public AccountController(AppDbContext appDbcontext)
         {
             _context = appDbcontext;
+            _passwordHasher = new PasswordHasher<UA>();
         }
 
         public IActionResult Index()
         {
-            return View(_context.UserAccounts.ToList());
+            return View(_context.Full_table.ToList());
         }
 
         [HttpGet]
@@ -136,23 +145,75 @@ namespace Registration_App.Controllers
             return View();
         }
 
+
+        
+            [HttpPost]
+public IActionResult Registration(RegistrationViewModel model)
+{
+    if (ModelState.IsValid)
+    {
+        UA account = new UA
+        {
+            Email = model.Email,
+            FirstName = model.FirstName,
+            LastName = model.LastName,
+            UserName = model.UserName,
+            DateOfBirth = model.DateOfBirth,
+            Gender = model.Gender,
+            Skills = model.Skills,
+            Role = model.Role
+        };
+
+        // Hash the password before saving
+        account.Password = _passwordHasher.HashPassword(account, model.Password);
+
+        try
+        {
+            _context.Full_table.Add(account);
+            _context.SaveChanges();
+
+            ModelState.Clear();
+            ViewBag.Message = $"{account.FirstName} {account.LastName} registered successfully.";
+        }
+        catch (Exception ex)
+        {
+                    // Log the exception details
+                    ModelState.AddModelError("", "Please enter unique email or password.");
+                    return View(model);
+                }
+    }
+    return View(model);
+}
+
+        
+
+         
+
+        /*
         [HttpPost]
         public IActionResult Registration(RegistrationViewModel model)
         {
             if (ModelState.IsValid)
             {
-                UserAccount account = new UserAccount
+                UA account = new UA
                 {
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
-                    Password = model.Password,
-                    UserName = model.UserName
+                    UserName = model.UserName,
+                    DateOfBirth = model.DateOfBirth,
+                    Gender = model.Gender,
+                    Skills = model.Skills,
+                    Role   = model.Role
                 };
+
+                // Hash the password before saving
+
+                account.Password = _passwordHasher.HashPassword(account, model.Password);
 
                 try
                 {
-                    _context.UserAccounts.Add(account);
+                    _context.Full_table.Add(account);
                     _context.SaveChanges();
 
                     ModelState.Clear();
@@ -166,32 +227,44 @@ namespace Registration_App.Controllers
             }
             return View(model);
         }
+        */
+
         public IActionResult Login()
         {
             return View();
         }
 
-        //through the model posts
         [HttpPost]
         public IActionResult Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var user = _context.UserAccounts.Where(x => (x.UserName == model.UserNameOrEmail || x.Email == model.UserNameOrEmail) && x.Password == model.Password).FirstOrDefault();
+                var user = _context.Full_table
+                    .FirstOrDefault(x => x.UserName == model.UserNameOrEmail || x.Email == model.UserNameOrEmail);
+
                 if (user != null)
                 {
-                    var claims = new List<Claim>
+                    // Verify the password
+                    var result = _passwordHasher.VerifyHashedPassword(user, user.Password, model.Password);
+                    if (result == PasswordVerificationResult.Success)
                     {
-                        new Claim(ClaimTypes.Name,user.Email),
-                        new Claim("Name",user.FirstName),
-                        new Claim("Email",user.Email),
-                        new Claim(ClaimTypes.Role,"User")
-                    };
+                        var claims = new List<Claim>
+                        {
+                            new Claim(ClaimTypes.Name, user.Email),
+                            new Claim("Name", user.FirstName),
+                            new Claim("Email", user.Email),
+                            new Claim(ClaimTypes.Role, "User")
+                        };
 
-                    var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-                    HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
+                        var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                        HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity));
 
-                    return RedirectToAction("SecurePage");
+                        return RedirectToAction("SecurePage");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError("", "Username/Email or Password is not correct.");
+                    }
                 }
                 else
                 {
