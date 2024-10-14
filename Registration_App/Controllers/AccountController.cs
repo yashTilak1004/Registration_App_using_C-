@@ -180,7 +180,7 @@ namespace Registration_App.Controllers
 
                 user.Skills = model.Skills;
 
-                user.Role = user.Role;
+                user.Role = user.Role;//
 
                 // Optionally, hash the password if it was changed
                 if (!string.IsNullOrEmpty(model.Password))
