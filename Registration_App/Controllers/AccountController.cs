@@ -64,7 +64,7 @@ namespace Registration_App.Controllers
         {
             return View();
         }
-
+         //
         //through the model posts
         [HttpPost]
         public IActionResult Login(LoginViewModel model)
