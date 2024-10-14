@@ -45,11 +45,19 @@
                 <input asp-for="ConfirmPassword" class="form-control" type="password" />
                 <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
             </div>
+            @*
             <div class="form-group">
                 <label asp-for="DateOfBirth" class="control-label"></label>
                 <input asp-for="DateOfBirth" class="form-control" type="date" />
                 <span asp-validation-for="DateOfBirth" class="text-danger"></span>
             </div>
+            *@
+            <div class="form-group">
+                <label asp-for="DateOfBirth" class="control-label"></label>
+                <input asp-for="DateOfBirth" class="form-control" type="date" data-val="true" data-val-date_verification="You must be at least 18 years old." />
+                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+            </div>
+
             <div class="form-group">
                 <label asp-for="Gender" class="control-label"></label>
                 <div>
@@ -152,13 +160,17 @@
      $.validator.addMethod("alphanumeric", function (a, b) 
      { return this.optional(b) || /^\w+$/i.test(a) }, 
      "Letters, numbers, and underscores only please.")
+     
+        @*$.validator.addMethod("Date_verification", function (value) {
+            var minAge = 18;
+            var currDate = new Date();
+            var minDate = new Date(currDate.getFullYear() - minAge, currDate.getMonth(), currDate.getDate());
+            var inputDate = new Date(value);
+            return inputDate <= minDate;
+        }, "You must be at least 18 years old.");*@
 
 
-
-
-
-
-     $('form').validate({
+        $('form').validate({
          rules: {
              FirstName: {
                  required:true,
@@ -182,9 +194,11 @@
              },
              DateOfBirth: {
                  required:true,
+                 Date_verification:true
              },
              Gender:{
-                 required:true
+                 required:true,
+                 Date_verification:true
              },
              Role:{
                  required:true
